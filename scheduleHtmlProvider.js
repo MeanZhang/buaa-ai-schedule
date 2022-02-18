@@ -1,28 +1,13 @@
-function scheduleHtmlProvider(iframeContent = "", frameContent = "", dom = document) {
-    //除函数名外都可编辑
-    //以下为示例，您可以完全重写或在此基础上更改
-
-    //     const ifrs = dom.getElementsByTagName("iframe");
-    //     const frs = dom.getElementsByTagName("frame");
-
-    //     if (ifrs.length) {
-    //         for (let i = 0; i < ifrs.length; i++) {
-    //             const dom = ifrs[i].contentWindow.document;
-    //             iframeContent += scheduleHtmlProvider(iframeContent, frameContent, dom);
-    //         }
-    //     }
-    //     if (frs.length) {
-    //         for (let i = 0; i < frs.length; i++) {
-    //             const dom = frs[i].contentDocument.body.parentElement;
-    //             frameContent += scheduleHtmlProvider(iframeContent, frameContent, dom);
-    //         }
-    //     }
-    //     if (!ifrs.length && !frs.length) {
-    //         return dom.querySelector('body').outerHTML
-    //     }
-    //         return dom.getElementsByTagName('html')[0].innerHTML + iframeContent + frameContent
-    let iframe=dom.getElementsByTagName('iframe')[0].contentDocument
-    let table = iframe.getElementsByClassName('addlist_01')[0].outerHTML
-    console.info(table)
-    return table
+async function scheduleHtmlProvider(
+  iframeContent = "",
+  frameContent = "",
+  dom = document
+) {
+  await loadTool("AIScheduleTools");
+  // 使用它们的时候务必带上await，否则没有系统alert的时停效果
+  await AIScheduleAlert("开始导入……\n完成后请手动修改开学时间\n如导入出错或有其他建议请联系QQ：390602272");
+  let iframe = dom.getElementsByTagName("iframe")[0].contentDocument;
+  let table = iframe.getElementsByClassName("xfyq_area mt10")[0].outerHTML;
+  // console.info(table)
+  return table;
 }
