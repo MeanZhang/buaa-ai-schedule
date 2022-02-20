@@ -76,13 +76,13 @@ function scheduleHtmlParser(html) {
     }
     return lessons;
   }
-/**
-   * 获取多节课程信息（同一老师不同教室， 如`张老师[10-13]周机房 第1，2节，[2-9]周（五）111 第1，2节`）
-   * @param {string} lessonName 课程名
-   * @param {number} day 星期
-   * @param {string} info 课程信息字符串
-   * @returns {Array<object>} 课程信息
-   */
+  /**
+     * 获取多节课程信息（同一老师不同教室， 如`张老师[10-13]周机房 第1，2节，[2-9]周（五）111 第1，2节`）
+     * @param {string} lessonName 课程名
+     * @param {number} day 星期
+     * @param {string} info 课程信息字符串
+     * @returns {Array<object>} 课程信息
+     */
   function getLessons2(lessonName, day, info) {
     let lessons = [];
     let teacher = info.split("[")[0].replace(/\s+/g, ""); //去掉空格
@@ -116,8 +116,8 @@ function scheduleHtmlParser(html) {
         //时间段不为空
         while (child) {
           //一个时间段可能有多个课程
-          //   lessonName = c.data.slice(0, 49); //课程名长度不能超过50字符
-          lessonName = child.data;
+          lessonName = child.data.slice(0, 49); //课程名长度不能超过50字符
+          // lessonName = child.data;
           child = child.next.children[0];
           if (child.data.slice(-1) === "节") {
             if (child.data.indexOf("，[") === -1) {
