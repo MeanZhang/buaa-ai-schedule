@@ -2,7 +2,11 @@
 
 <p align="center">
   <a href="https://www.meancoder.xyz/" alt="开发者">
-    <img src="https://img.shields.io/badge/开发者-Mean-blue">
+    <img src="https://img.shields.io/badge/开发者-Mean-blue?logo=Node.js
+">
+  </a>
+  <a href="https://github.com/MeanZhang/buaa-ai-schedule" alt="使用人数">
+    <img src="https://api.meancoder.xyz/schedule">
   </a>
 </p>
 
