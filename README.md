@@ -1,8 +1,8 @@
 # 小爱课程表 北京航空航天大学-本科教务管理系统
 
 <p align="center">
-  <a href="https://www.meancoder.xyz/" alt="开发者">
-    <img src="https://img.shields.io/badge/开发者-Mean-blue?logo=Node.js
+  <a href="https://github.com/MeanZhang" alt="开发者">
+    <img src="https://img.shields.io/badge/开发者-Mean-blue?logo=github
 ">
   </a>
   <a href="https://github.com/MeanZhang/buaa-ai-schedule" alt="使用人数">
