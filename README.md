@@ -2,8 +2,7 @@
 
 <p align="center">
   <a href="https://github.com/MeanZhang" alt="开发者">
-    <img src="https://img.shields.io/badge/开发者-Mean-blue?logo=github
-">
+    <img src="https://img.shields.io/badge/开发者-Mean-blue?logo=github">
   </a>
   <a href="https://github.com/MeanZhang/buaa-ai-schedule" alt="使用人数">
     <img src="https://api.meancoder.xyz/schedule">
