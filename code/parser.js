@@ -21,11 +21,9 @@ function scheduleHtmlParser(html) {
           lessons = getLessons2(text[0], day, text[1]);
         }
       } else if (text.length === 3) {
-        lessons = getLessons1(text[0], day, text[1], text[2]);
-      } else if (text.length === 4) {
-        lessons = getLessons3(text[0], day, text[1], text[2], text[3]);
+        lessons = getLessons3(text[0], day, text[1], text[2]);
       } else {
-        lessons = getLessons4(text, day);
+        lessons = getLessons(text, day);
       }
       for (let l in lessons) {
         courseInfos.push(lessons[l]);
@@ -128,7 +126,7 @@ function getLesson(lessonName, day, info) {
  * @param {string} info2 教室（第二行）
  * @returns {Array<object>} 课程信息
  */
-function getLessons1(lessonName, day, info1, info2) {
+function getLessons3(lessonName, day, info1, info2) {
   let lessons = [];
   let position = info2.split("\n")[0];
   let sections = getSections(info2);
@@ -177,39 +175,49 @@ function getLessons2(lessonName, day, info) {
 
 /**
  * 获取多节课程信息（同一课程被拆分为不同老师不同教室）
- * @param {string} lessonName 课程名
+ *
+ * 0: "基础物理实验(1)"
+ *
+ * 1: "陈  彦[3-17]周"
+ *
+ * 2: "物理教学与实验中心\n第6，7节，唐  芳[3-17]周"
+ *
+ * 3: "物理教学与实验中心\n第6，7节，王文玲[2]周"
+ *
+ * 4: "(一)30\n第6，7节，王文玲[3-17]周"
+ *
+ * 5: "物理教学与实验中心\n第6，7节，熊  畅[3-17]周"
+ *
+ * 6: "物理教学与实验中心\n第6，7节，徐  平[3-17]周"
+ *
+ * 7: "物理教学与实验中心\n第6，7节，严琪琪[3-17]周"
+ *
+ * 8: "物理教学与实验中心\n第6，7节，赵  路[3-17]周"
+ *
+ * 9: "物理教学与实验中心\n第6，7节"
+ *
+ * @param {string} text 课程信息
  * @param {number} day 星期
- * @param {string} info1 课程信息1（“丁老师[1-8]周”）
- * @param {string} info2 课程信息2（“(三)302\n第3，4节，徐  坤[9-16]周”）
- * @param {string} info3 课程信息3（“(三)312\n第3，4节”）
  * @returns {Array<object>} 课程信息
  */
-function getLessons3(lessonName, day, info1, info2, info3) {
-  // console.log(lessonName, day, info1, info2, info3);
+function getLessonsN(text, day) {
   let lessons = [];
-  lessons.push({
-    name: lessonName,
-    day: day,
-    teacher: /[^\[0-9]+(?=[\[0-9])/.exec(info1)[0].replace(/\s*/g, ""),
-    position: info2.split("\n")[0],
-    sections: getSections(info2.split("\n")[1].split("节")[0] + "节"),
-    weeks: getWeeks(/[\[0-9-\]]+(?=周)/.exec(info1)[0]),
-  });
-  lessons.push({
-    name: lessonName,
-    day: day,
-    teacher: /[^\[0-9]+(?=[\[0-9])/
-      .exec(info2.split("节，")[1])[0]
-      .replace(/\s*/g, ""),
-    position: info3.split("\n")[0],
-    sections: getSections(info3.split("\n")[1].split("节")[0] + "节"),
-    weeks: getWeeks(/[\[0-9-\]]+(?=周)/.exec(info2)[0]),
-  });
+  const lessonName = text[0];
+  for (let i = 1; i < text.length - 1; i++) {
+    lessons.push({
+      name: lessonName,
+      day: day,
+      teacher: /[^\[0-9]+(?=[\[0-9])/.exec(text[i])[0].replace(/\s*/g, ""),
+      position: text[i + 1].split("\n")[0],
+      sections: getSections(text[i + 1].split("\n")[1].split("节")[0] + "节"),
+      weeks: getWeeks(/[\[0-9-\]]+(?=周)/.exec(text[i])[0]),
+    });
+  }
   return lessons;
 }
 
 /**
- * 获取超过 4 行课程信息
+ * 获取超过 3 行课程信息
  *
  * 0: "数据结构(实验)"
  *
@@ -225,23 +233,36 @@ function getLessons3(lessonName, day, info1, info2, info3) {
  * @param {number} day 星期
  * @returns {Array<object>} 课程信息
  */
-function getLessons4(text, day) {
+function getLessons(text, day) {
   let lessons = [];
   let infos = [];
   let info = [];
-  for (const i of text) {
-    info.push(i);
-    if (i.indexOf("节") > -1) {
+  let isPrevLineSecOrWeek = false;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i].indexOf("节") > -1 || text[i].indexOf("周") > -1) {
+      isPrevLineSecOrWeek = true;
+    } else {
+      if (isPrevLineSecOrWeek) {
+        infos.push(info);
+        info = [];
+        isPrevLineSecOrWeek = false;
+      }
+    }
+    info.push(text[i]);
+    if (i === text.length - 1) {
       infos.push(info);
-      info = [];
     }
   }
   for (const i of infos) {
     if (i.length === 2) {
-      console.log(i);
       lessons.push(getLesson(i[0], day, i[1]));
     } else if (i.length === 3) {
-      const l = getLessons1(i[0], day, i[1], i[2]);
+      const l = getLessons3(i[0], day, i[1], i[2]);
+      for (const j of l) {
+        lessons.push(j);
+      }
+    } else {
+      const l = getLessonsN(text, day);
       for (const j of l) {
         lessons.push(j);
       }
