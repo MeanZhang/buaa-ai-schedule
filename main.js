@@ -139,7 +139,9 @@ const runParser = (conn, providerRes, parserCode) => {
   try {
     const vm = new VM({
       timeout: 3000,
-      sandbox: {},
+      sandbox: {
+        console
+      },
     })
     let exec = cheerioStr.replace(`"<body>aaa<body>"`, `String.raw\`${providerRes}\``)
     exec = exec.replace(`console.log(r.text())`, `

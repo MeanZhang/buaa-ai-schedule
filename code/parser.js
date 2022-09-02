@@ -22,10 +22,10 @@ function scheduleHtmlParser(html) {
         }
       } else if (text.length === 3) {
         lessons = getLessons1(text[0], day, text[1], text[2]);
-      } else {
-        console.log(text);
-        console.log(linelessons[index]);
+      } else if (text.length === 4) {
         lessons = getLessons3(text[0], day, text[1], text[2], text[3]);
+      } else {
+        lessons = getLessons4(text, day);
       }
       for (let l in lessons) {
         courseInfos.push(lessons[l]);
@@ -93,6 +93,10 @@ function getSections(str) {
 
 /**
  * 获取单节课程信息
+ *
+ * 0: "电子工程技术训练"
+ *
+ * 1: "王虹霞[1-9]周沙河工训\n第1，2节"
  * @param {string} lessonName 课程名
  * @param {number} day 星期
  * @param {string} info 课程信息字符串
@@ -103,7 +107,6 @@ function getLesson(lessonName, day, info) {
   lesson.name = lessonName;
   lesson.day = day;
   lesson.teacher = info.split("[")[0].replace(/\s+/g, ""); //去掉空格，多教师只提取第一个
-
   //提取教室
   tmp = info.split("周");
   lesson.position = tmp[tmp.length - 1].split("\n")[0];
@@ -112,7 +115,13 @@ function getLesson(lessonName, day, info) {
 }
 
 /**
- * 获取多节课程信息（同一课程被拆分为多节课）
+ * 获取 3 行课程信息（同一课程被拆分为多节课）
+ *
+ * 0: "围棋基础（1）(待生效)"
+ *
+ * 1: "薛  峰[11]周，[3-10]周"
+ *
+ * 2: "J3-411\n第11，12节"
  * @param {string} lessonName 课程名
  * @param {number} day 星期
  * @param {string} info1 课程信息（不含教室，第一行）
@@ -124,11 +133,16 @@ function getLessons1(lessonName, day, info1, info2) {
   let position = info2.split("\n")[0];
   let sections = getSections(info2);
   let allWeeks = info1.split("周，");
+  const teacher = allWeeks[0].split("[")[0].replace(/\s+/g, ""); //去掉空格
   for (i in allWeeks) {
     let lesson = { sections: sections, weeks: getWeeks(allWeeks[i]) };
     lesson.name = lessonName;
     lesson.day = day;
     lesson.teacher = allWeeks[i].split("[")[0].replace(/\s+/g, ""); //去掉空格
+    if (!lesson.teacher) {
+      // 如果没有解析到教师，则使用第一个教师
+      lesson.teacher = teacher;
+    }
     lesson.position = position;
     lessons.push(lesson);
   }
@@ -171,7 +185,7 @@ function getLessons2(lessonName, day, info) {
  * @returns {Array<object>} 课程信息
  */
 function getLessons3(lessonName, day, info1, info2, info3) {
-  console.log(lessonName, day, info1, info2, info3);
+  // console.log(lessonName, day, info1, info2, info3);
   let lessons = [];
   lessons.push({
     name: lessonName,
@@ -192,4 +206,53 @@ function getLessons3(lessonName, day, info1, info2, info3) {
     weeks: getWeeks(/[\[0-9-\]]+(?=周)/.exec(info2)[0]),
   });
   return lessons;
+}
+
+/**
+ * 获取超过 4 行课程信息
+ *
+ * 0: "数据结构(实验)"
+ *
+ * 1: "刘  博[16，17]周学院教学实验室-航天工程综合实验与创新中心（主楼D306）\n第3，4节"
+ *
+ * 2: "数据结构"
+ *
+ * 3: "刘  博[10-15]周，谢凤英[1-9]周"
+ *
+ * 4: "J4-206\n第3，4节"
+ *
+ * @param {Array<string>} text 原始文本
+ * @param {number} day 星期
+ * @returns {Array<object>} 课程信息
+ */
+function getLessons4(text, day) {
+  let lessons = [];
+  let infos = [];
+  let info = [];
+  for (const i of text) {
+    info.push(i);
+    if (i.indexOf("节") > -1) {
+      infos.push(info);
+      info = [];
+    }
+  }
+  for (const i of infos) {
+    if (i.length === 2) {
+      console.log(i);
+      lessons.push(getLesson(i[0], day, i[1]));
+    } else if (i.length === 3) {
+      const l = getLessons1(i[0], day, i[1], i[2]);
+      for (const j of l) {
+        lessons.push(j);
+      }
+    }
+  }
+  return lessons;
+}
+
+function logText(text) {
+  for (let i in text) {
+    console.log(i + ": " + text[i]);
+  }
+  console.log("-----------------------");
 }
