@@ -51,6 +51,20 @@ function getText(element) {
   }
   return text;
 }
+/**
+ * 提取教师姓名
+ * @param {string} str 包含教师姓名的字符串，如`葛 宁[2，3，5，8，10，14]周`、`J3-312\n第11，12节，李祺[2，4，12，14双]周`
+ * @returns {string} 教师姓名
+ */
+function getTeacher(str) {
+  if (str.indexOf("\n") !== -1) {
+    str = str.split("\n")[1];
+  }
+  if(/^第.*节/.exec(str)){
+    str=str.split("节")[1];
+  }
+  return /[^\[0-9]+(?=[\[0-9])/.exec(str)[0].replace(/\s*/g, "");
+}
 
 /**
  * 提取课程周数
@@ -231,7 +245,7 @@ function getLessonsN(text, day) {
     lessons.push({
       name: lessonName,
       day: day,
-      teacher: /[^\[0-9]+(?=[\[0-9])/.exec(text[i])[0].replace(/\s*/g, ""),
+      teacher: getTeacher(text[i]),
       position: text[i + 1].split("\n")[0],
       sections: getSections(text[i + 1].split("\n")[1].split("节")[0] + "节"),
       weeks: getWeeks(/[\[0-9-，单双\]]+(?=周)/.exec(text[i])[0]),
