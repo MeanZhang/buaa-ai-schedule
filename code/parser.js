@@ -54,7 +54,7 @@ function getText(element) {
 
 /**
  * 提取课程周数
- * @param {string} str 包含周数的字符串，如`[1-9，11]`、`12，14`
+ * @param {string} str 包含周数的字符串，如`[1-9，11]`、`12，14`、`[2，4，12，14双]`、`[14]`
  * @returns {Array<number>} 包含`str`中所有周数的数组
  */
 function getWeeks(str) {
@@ -68,7 +68,17 @@ function getWeeks(str) {
       end = begin;
     }
     for (let j = parseInt(begin); j <= parseInt(end); j++) {
-      weeks.push(j);
+      if (weekArray[i].indexOf("双") !== -1) {
+        if (j % 2 === 0) {
+          weeks.push(j);
+        }
+      } else if (weekArray[i].indexOf("单") !== -1) {
+        if (j % 2 === 1) {
+          weeks.push(j);
+        }
+      } else {
+        weeks.push(j);
+      }
     }
   }
   return weeks;
@@ -196,6 +206,20 @@ function getLessons2(lessonName, day, info) {
  *
  * 9: "物理教学与实验中心\n第6，7节"
  *
+ * ---
+ *
+ * 0: "走进软件"
+ *
+ * 1: "葛 宁[2，3，5，8，10，14]周"
+ *
+ * 2: "J3-312\n第11，12节，李祺[2，4，12，14双]周"
+ *
+ * 3: "J3-312\n第11，12节，于 茜[2，7-12单，13，14]周"
+ *
+ * 4: "机房\n第11，12节，张 莉[2，14双]周"
+ *
+ * 5: "J3-312\n第11，12节"
+ *
  * @param {string} text 课程信息
  * @param {number} day 星期
  * @returns {Array<object>} 课程信息
@@ -210,7 +234,7 @@ function getLessonsN(text, day) {
       teacher: /[^\[0-9]+(?=[\[0-9])/.exec(text[i])[0].replace(/\s*/g, ""),
       position: text[i + 1].split("\n")[0],
       sections: getSections(text[i + 1].split("\n")[1].split("节")[0] + "节"),
-      weeks: getWeeks(/[\[0-9-\]]+(?=周)/.exec(text[i])[0]),
+      weeks: getWeeks(/[\[0-9-，单双\]]+(?=周)/.exec(text[i])[0]),
     });
   }
   return lessons;
