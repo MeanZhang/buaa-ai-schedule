@@ -9,20 +9,31 @@ function scheduleHtmlParser(html) {
       // 1-7列为每一天
       const index = day + 1; // 列标为天数+1
       const text = getText(linelessons[index]);
+      console.info("----------");
       if (text[0] === "&nbsp;") {
+        console.info("第" + l + "行第" + day + "列为空");
         continue;
       }
+      console.info("开始解析第" + l + "行第" + day + "列：\n" + text);
       let lessons;
       if (text.length === 1) {
+        // 暂时没有仅一行的课程信息
       } else if (text.length === 2) {
+        // 课程信息为两行
         if (text[1].indexOf("，[") === -1) {
+          console.info("调用getLesson()方法");
           lessons = [getLesson(text[0], day, text[1])];
         } else {
+          console.info("调用getLessons2()方法");
           lessons = getLessons2(text[0], day, text[1]);
         }
       } else if (text.length === 3) {
+        // 课程信息为三行
+        console.info("调用getLessons3()方法");
         lessons = getLessons3(text[0], day, text[1], text[2]);
       } else {
+        // 课程信息超过三行
+        console.info("调用getLessons()方法");
         lessons = getLessons(text, day);
       }
       for (let l in lessons) {
@@ -60,8 +71,8 @@ function getTeacher(str) {
   if (str.indexOf("\n") !== -1) {
     str = str.split("\n")[1];
   }
-  if(/^第.*节/.exec(str)){
-    str=str.split("节")[1];
+  if (/^第.*节/.exec(str)) {
+    str = str.split("节")[1];
   }
   return /[^\[0-9]+(?=[\[0-9])/.exec(str)[0].replace(/\s*/g, "");
 }
@@ -239,16 +250,35 @@ function getLessons2(lessonName, day, info) {
  * @returns {Array<object>} 课程信息
  */
 function getLessonsN(text, day) {
+  console.info(text);
   let lessons = [];
   const lessonName = text[0];
   for (let i = 1; i < text.length - 1; i++) {
+    let position, sections, weeks;
+    try {
+      position = text[i + 1].split("\n")[0];
+    } catch (error) {
+      console.error("上课地点解析错误", text[i + 1]);
+    }
+    try {
+      sections = getSections(text[i + 1].split("\n")[1].split("节")[0] + "节");
+    } catch (error) {
+      console.error("上课节数解析错误", text[i + 1]);
+    }
+    try {
+      weeks = getWeeks(
+        [...text[i].matchAll(/[\[0-9-，单双\]]+(?=周)/g)].pop()[0]
+      );
+    } catch (error) {
+      console.error("上课周数解析错误", text[i]);
+    }
     lessons.push({
       name: lessonName,
       day: day,
       teacher: getTeacher(text[i]),
-      position: text[i + 1].split("\n")[0],
-      sections: getSections(text[i + 1].split("\n")[1].split("节")[0] + "节"),
-      weeks: getWeeks(/[\[0-9-，单双\]]+(?=周)/.exec(text[i])[0]),
+      position: position,
+      sections: sections,
+      weeks: weeks,
     });
   }
   return lessons;
@@ -267,6 +297,42 @@ function getLessonsN(text, day) {
  *
  * 4: "J4-206\n第3，4节"
  *
+ * ---
+ *
+ * 0: "基础物理实验(1)"
+ *
+ * 1: "陈  彦[3-17]周"
+ *
+ * 2: "物理教学与实验中心\n第6，7节，唐  芳[3-17]周"
+ *
+ * 3: "物理教学与实验中心\n第6，7节，王文玲[2]周"
+ *
+ * 4: "(一)30\n第6，7节，王文玲[3-17]周"
+ *
+ * 5: "物理教学与实验中心\n第6，7节，熊  畅[3-17]周"
+ *
+ * 6: "物理教学与实验中心\n第6，7节，徐  平[3-17]周"
+ *
+ * 7: "物理教学与实验中心\n第6，7节，严琪琪[3-17]周"
+ *
+ * 8: "物理教学与实验中心\n第6，7节，赵  路[3-17]周"
+ *
+ * 9: "物理教学与实验中心\n第6，7节"
+ *
+ * ---
+ *
+ * 0: "走进软件"
+ *
+ * 1: "葛 宁[2，3，5，8，10，14]周"
+ *
+ * 2: "J3-312\n第11，12节，李祺[2，4，12，14双]周"
+ *
+ * 3: "J3-312\n第11，12节，于 茜[2，7-12单，13，14]周"
+ *
+ * 4: "机房\n第11，12节，张 莉[2，14双]周"
+ *
+ * 5: "J3-312\n第11，12节"
+ *
  * @param {Array<string>} text 原始文本
  * @param {number} day 星期
  * @returns {Array<object>} 课程信息
@@ -278,9 +344,12 @@ function getLessons(text, day) {
   let isPrevLineSecOrWeek = false;
   for (let i = 0; i < text.length; i++) {
     if (text[i].indexOf("节") > -1 || text[i].indexOf("周") > -1) {
+      // 该行包含节次或周次信息
       isPrevLineSecOrWeek = true;
     } else {
+      // 该行不包含节次或周次信息
       if (isPrevLineSecOrWeek) {
+        // 上一行包含节次或周次信息
         infos.push(info);
         info = [];
         isPrevLineSecOrWeek = false;
@@ -307,11 +376,4 @@ function getLessons(text, day) {
     }
   }
   return lessons;
-}
-
-function logText(text) {
-  for (let i in text) {
-    console.log(i + ": " + text[i]);
-  }
-  console.log("-----------------------");
 }
