@@ -36,9 +36,7 @@ function scheduleHtmlParser(html) {
         console.info("调用getLessons()方法");
         lessons = getLessons(text, day);
       }
-      for (let l in lessons) {
-        courseInfos.push(lessons[l]);
-      }
+      courseInfos.push(...lessons);
     }
   }
   return courseInfos;
