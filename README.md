@@ -1,5 +1,7 @@
 # 小爱课程表 北京航空航天大学-本科教务管理系统
 
+## ⚠️ 本项目已停止维护，开发者已毕业，有兴趣的同学可以 fork 后继续开发
+
 <p align="center">
   <a href="https://github.com/MeanZhang" alt="开发者">
     <img src="https://img.shields.io/badge/开发者-Mean-blue?logo=github">
